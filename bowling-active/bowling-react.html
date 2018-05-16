@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="css/reset2.css">
+    <link rel="stylesheet" href="css/bowling.css">
+    <script src="js/jquery-1.11.3.min.js"></script>
+    <script src="js/react.min.js"></script>
+    <script src="js/common.js"></script>
+    <title>武夷山水保龄球活动报名页</title>
+</head>
+<body>
+    <script src="js/react-dom.min.js"></script>
+    <script src="js/browser.min.js"></script>
+    <script type="text/babel">
+        var Bowling = React.createClass({
+            getInitialState: function() {
+                return{
+                    name: "",
+                    tel: "",
+                    nameWarn: "",
+                    telWarn: "",
+                    nameBoolean: false,
+                    telBoolean: false
+                }
+            },
+            nameText: function(e) {
+                if(e.target.value.length == 0) {
+                    this.setState({nameWarn: "姓名不能为空",nameBoolean:false})
+                }else {
+                    this.setState({nameWarn: "", nameBoolean:true});
+                }
+            },
+            telText: function(e) {
+                var phones = /^[1][34578][0-9]{9}$/;
+                if(e.target.value.length == 0) {
+                    this.setState({telWarn: "手机号不能为空", telBoolean:false})
+                }else if(!(phones.test(e.target.value))){
+                    this.setState({telWarn: "请输入正确的手机号码", telBoolean:false})
+                }else {
+                    this.setState({telWarn: "", telBoolean:true})
+                }
+            },
+            hadleClick: function() {
+                if(this.state.nameBoolean && this.state.telBoolean) {
+                    this.setState({telWarn: "",nameWarn: ""});
+                    inputSubmit();
+                } else {
+                    alert("请将信息填写完整之后再进行提交");
+                }
+            },
+            hadleChange: function(string ,e) {
+                var newState = {};
+                newState[string] = e.target.value;
+                this.setState(newState);
+            },
+            render: function () {
+                return(
+                    <div className="wrap">
+                        <h1>武夷山水</h1>
+                        <div className="content">
+                            <h2>参赛信息</h2>
+                            <h3>Competition  information</h3>
+                            <div>
+                                <div className="text">
+                                    <div className="par">
+                                        <span>姓名</span>
+                                    </div>
+                                    <input type="text" name="userName" value={this.state.name} onBlur={this.nameText} onChange={this.hadleChange.bind(this, "name")}/>
+                                </div>
+                                <p className="tip">{this.state.nameWarn}</p>
+                            </div>
+                            <div>
+                                <div className="text">
+                                    <div className="par">
+                                        <span>手机号</span>
+                                    </div>
+                                    <input type="text" name="mobile" value={this.state.tel} className="tel" onBlur={this.telText} onChange={this.hadleChange.bind(this, "tel")}/>
+                                </div>
+                                <p className="tip">{this.state.telWarn}</p>
+                            </div>
+                            <div className="btn">
+                                <input type="submit" name="" value="提交" onClick={this.hadleClick}/>
+                            </div>
+                            <p className="mes">参 加 游 戏 的 小 伙 伴 需 要 填 写</p>
+                            <p className="mes">个 人 信 息 才 方 可 进 入 游 戏 哦</p>
+                        </div>
+                    </div>
+                )
+            }    
+        });
+        ReactDOM.render(<Bowling />, document.body);
+        
+        function inputSubmit() {
+            $(".btn input").css({"background" : "url('images/d-nouse.png') 0 0 no-repeat", "background-size" : "100% 100%"});
+            $(".btn input").attr("disabled", "disabled");
+            var id = window.location.search.split("=")[1];
+            var obj = {};
+            obj.userName = $("input[name='userName']").val();
+            obj.mobile = $("input[name='mobile']").val();
+            obj.activityId = id;
+            $.ajax({
+                url: 'http://192.168.1.115:8100/activity/addActivityUser',
+                type: 'post',
+                datType: 'JSON',
+                contentType : "application/json",
+                data:JSON.stringify(obj),
+                success: function(data) {
+                    alert("报名成功");
+                    $("input[name='mobile']").val("");
+                    $("input[name='userName']").val("");
+                    $(".btn input").css({"background" : "url('images/yellow.png') 0 0 no-repeat", "background-size" : "100% 100%"});
+                    $(".btn input").attr("disabled", false);
+                },
+                error: function(data) {
+                    alert(data.responseJSON.description);
+                    $("input[name='mobile']").val("");
+                    $("input[name='userName']").val("");
+                    $(".btn input").css({"background" : "url('images/yellow.png') 0 0 no-repeat", "background-size" : "100% 100%"});
+                    $(".btn input").attr("disabled", false);
+                }
+            })
+        }
+    </script>
+</body>
+</html>
